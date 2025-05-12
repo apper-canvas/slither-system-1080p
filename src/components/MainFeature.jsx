@@ -583,5 +583,4 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
     </div>
   );
 };
-}
-export default MainFeature;
+};
