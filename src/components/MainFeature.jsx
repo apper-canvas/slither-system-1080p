@@ -86,6 +86,34 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
   
   // Component to render snakes and ladders
   const SnakesAndLadders = () => {
+    // Helper function to get pixel position for a square
+    const getSquarePixelPosition = (squareNumber) => {
+      // Get the grid position (row, col) first
+      const pos = getSquarePosition(squareNumber);
+      
+      // Each square is 10% of board width/height
+      const squareSize = 10;
+      
+      // Calculate center point in percentage coordinates
+      // The key insight: we need to account for the snake pattern layout
+      // where even and odd rows have different directions
+      let x, y;
+      
+      // Y-coordinate is straightforward (based on row from top)
+      y = (pos.rowFromTop * squareSize) + (squareSize / 2);
+      
+      // X-coordinate depends on whether the row goes left-to-right or right-to-left
+      if (pos.rowFromTop % 2 === 0) {
+        // Even rows from top (0, 2, 4...) go left to right
+        x = (pos.col * squareSize) + (squareSize / 2);
+      } else {
+        // Odd rows from top (1, 3, 5...) go right to left
+        x = ((boardSize - 1 - pos.col) * squareSize) + (squareSize / 2);
+      }
+      
+      return { x, y };
+    };
+    
     const elements = [];
     
     Object.entries(specialSquares).forEach(([start, end], index) => {
@@ -93,30 +121,13 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
       const endSquare = parseInt(end);
       const isLadder = endSquare > startSquare;
       
-      // Get positions for start and end squares
-      const startPos = getSquarePosition(startSquare);
-      const endPos = getSquarePosition(endSquare);
-
-      // Calculate the physical position of squares on the screen
-      // Each square is 10% of the board width/height
-      const squareSize = 10;
-      
-      // Adjust position based on the row orientation (snake pattern)
-      // For actual coordinates on the physical board
-      const getAdjustedPosition = (pos) => {
-        const x = pos.col * squareSize + (squareSize / 2);
-        const y = pos.row * squareSize + (squareSize / 2);
-        return { x, y };
-      };
-      
-      const startAdjusted = getAdjustedPosition(startPos);
-      const endAdjusted = getAdjustedPosition(endPos);
-      
-      // Calculate center points of the squares (as percentages)
-      const startX = startAdjusted.x;
-      const startY = startAdjusted.y;
-      const endX = endAdjusted.x;
-      const endY = endAdjusted.y;
+      // Get accurate pixel positions considering the snake pattern
+      const startPos = getSquarePixelPosition(startSquare);
+      const endPos = getSquarePixelPosition(endSquare);
+      const startX = startPos.x;
+      const startY = startPos.y;
+      const endX = endPos.x;
+      const endY = endPos.y;
       
       // Calculate offsets for better visual connection
       // This helps the snakes and ladders connect more naturally to the squares
