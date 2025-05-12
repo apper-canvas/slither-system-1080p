@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'react-toastify/dist/ReactToastify.css';
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
+  
+  h1 {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+  }
+  
+  h2 {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl lg:text-3xl;
+  }
+  
+  h4 {
+    @apply text-lg md:text-xl lg:text-2xl;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 active:scale-95;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-dark focus:ring-2 focus:ring-primary-light;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-white hover:bg-secondary-dark focus:ring-2 focus:ring-secondary-light;
+  }
+  
+  .btn-accent {
+    @apply bg-accent text-white hover:bg-amber-600 focus:ring-2 focus:ring-amber-400;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-surface-800 rounded-2xl shadow-card dark:shadow-none p-6 border border-surface-200 dark:border-surface-700;
+  }
+  
+  .board-square {
+    @apply flex items-center justify-center relative border border-surface-300 dark:border-surface-700 transition-all duration-200;
+  }
+  
+  .player-token {
+    @apply absolute w-5 h-5 md:w-6 md:h-6 rounded-full border-2 transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .dice-animation {
+    animation: dice-roll 0.6s ease;
+  }
+  
+  @keyframes dice-roll {
+    0% { transform: rotateX(0deg) rotateY(0deg); }
+    25% { transform: rotateX(90deg) rotateY(45deg); }
+    50% { transform: rotateX(180deg) rotateY(90deg); }
+    75% { transform: rotateX(270deg) rotateY(135deg); }
+    100% { transform: rotateX(360deg) rotateY(180deg); }
+  }
+  
+  .token-move {
+    transition: all 0.5s ease-in-out;
+  }
+}
