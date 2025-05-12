@@ -64,6 +64,107 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
     }
   }, [positions, players, lastSquare]);
   
+  // Helper functions to calculate square positions
+  const getSquarePosition = (squareNumber) => {
+    // Convert square number (1-100) to row and column (0-9)
+    const squareIndex = squareNumber - 1;
+    const row = Math.floor(squareIndex / boardSize);
+    const rowFromBottom = boardSize - 1 - row;
+    
+    // Determine column based on row (odd rows go right to left)
+    let col;
+    if (row % 2 === 0) {
+      // Even rows (from bottom) go left to right
+      col = squareIndex % boardSize;
+    } else {
+      // Odd rows (from bottom) go right to left
+      col = boardSize - 1 - (squareIndex % boardSize);
+    }
+    
+    return { row: rowFromBottom, col };
+  };
+  
+  // Component to render snakes and ladders
+  const SnakesAndLadders = () => {
+    const elements = [];
+    
+    Object.entries(specialSquares).forEach(([start, end], index) => {
+      const startSquare = parseInt(start);
+      const endSquare = parseInt(end);
+      const isLadder = endSquare > startSquare;
+      
+      // Get positions for start and end squares
+      const startPos = getSquarePosition(startSquare);
+      const endPos = getSquarePosition(endSquare);
+      
+      // Calculate center points of the squares (as percentages)
+      const startX = (startPos.col + 0.5) * 10; // 10% per square (boardSize=10)
+      const startY = (startPos.row + 0.5) * 10;
+      const endX = (endPos.col + 0.5) * 10;
+      const endY = (endPos.row + 0.5) * 10;
+      
+      // Calculate dimensions and angle
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+      
+      if (isLadder) {
+        // Draw ladder
+        elements.push(
+          <div 
+            key={`ladder-${startSquare}-${endSquare}`}
+            className="ladder"
+            style={{
+              width: `${distance}%`,
+              left: `${startX}%`,
+              top: `${startY}%`,
+              transform: `rotate(${angle}deg)`,
+              transformOrigin: 'left center',
+            }}
+            aria-label={`Ladder from square ${startSquare} to ${endSquare}`}
+          >
+            {/* Add ladder rungs */}
+            {Array.from({ length: Math.floor(distance / 2) }).map((_, i) => (
+              <div 
+                key={`rung-${i}`}
+                className="ladder-rung"
+                style={{ left: `${(i + 1) * (100 / (Math.floor(distance / 2) + 1))}%` }}
+              />
+            ))}
+            <div className="absolute -top-3 -left-3 bg-green-500 text-white text-xs px-1 rounded-full z-20">
+              {startSquare}→{endSquare}
+            </div>
+          </div>
+        );
+      } else {
+        // Draw snake
+        const controlPointOffset = distance * 0.3; // Curve control point offset
+        
+        elements.push(
+          <div
+            key={`snake-${startSquare}-${endSquare}`}
+            className="snake"
+            style={{
+              width: `${distance}%`,
+              left: `${startX}%`,
+              top: `${startY}%`,
+              transform: `rotate(${angle}deg)`,
+              transformOrigin: 'left center',
+            }}
+            aria-label={`Snake from square ${startSquare} to ${endSquare}`}
+          >
+            <div className="absolute -top-3 -left-3 bg-red-500 text-white text-xs px-1 rounded-full z-20">
+              {startSquare}→{endSquare}
+            </div>
+          </div>
+        );
+      }
+    });
+    
+    return elements;
+  };
+  
   // Create and populate the board
   const createBoard = () => {
     const squares = [];
@@ -273,23 +374,7 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
           {/* Game Board Grid with Ladder */}
           <div className="grid grid-cols-10 gap-0.5 md:gap-1 border border-surface-300 dark:border-surface-600 rounded-xl overflow-hidden relative">
             {createBoard()}
-            
-            {/* Ladder from square 4 to square 14 */}
-            <div 
-              className="ladder"
-              style={{
-                width: '180%',
-                left: '35%',
-                top: '75%',
-                transform: 'rotate(-38deg)',
-                transformOrigin: 'left center',
-              }}
-              aria-label="Ladder from square 4 to square 14"
-            >
-              <div className="absolute -top-3 -left-3 bg-green-500 text-white text-xs px-1 rounded-full">
-                4→14
-              </div>
-            </div>
+            <SnakesAndLadders />
             
           </div>
           
