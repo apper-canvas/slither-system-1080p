@@ -445,6 +445,23 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
               </div>
             ))}
           </div>
+          {/* Legend */}
+          <div className="mt-4 flex flex-wrap gap-4 justify-center">
+            <div className="flex items-center">
+              <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-green-400 dark:border-green-600 bg-surface-100 dark:bg-surface-700 mr-2"></div>
+              <span className="text-sm">Ladder (Move Up)</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-red-400 dark:border-red-600 bg-surface-100 dark:bg-surface-700 mr-2"></div>
+              <span className="text-sm">Snake (Move Down)</span>
+            </div>
+            {players.map((player, index) => (
+              <div key={index} className="flex items-center">
+                <div className="w-4 h-4 md:w-5 md:h-5 rounded-full mr-2" style={{ backgroundColor: player.color }}></div>
+                <span className="text-sm">{player.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       
