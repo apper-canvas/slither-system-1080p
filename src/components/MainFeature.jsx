@@ -66,22 +66,22 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
   
   // Helper functions to calculate square positions
   const getSquarePosition = (squareNumber) => {
-    // Convert square number (1-100) to row and column (0-9)
+    // Convert square number (1-100) to row (0-9) and column (0-9)
     const squareIndex = squareNumber - 1;
-    const row = Math.floor(squareIndex / boardSize);
-    const rowFromBottom = boardSize - 1 - row;
+    const rowFromTop = Math.floor(squareIndex / boardSize);
+    const row = boardSize - 1 - rowFromTop; // Convert to row from bottom (0-9)
     
     // Determine column based on row (odd rows go right to left)
     let col;
-    if (row % 2 === 0) {
+    if (rowFromTop % 2 === 0) {
       // Even rows (from bottom) go left to right
       col = squareIndex % boardSize;
     } else {
       // Odd rows (from bottom) go right to left
       col = boardSize - 1 - (squareIndex % boardSize);
     }
-    
-    return { row: rowFromBottom, col };
+
+    return { row, col, rowFromTop };
   };
   
   // Component to render snakes and ladders
@@ -96,12 +96,40 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
       // Get positions for start and end squares
       const startPos = getSquarePosition(startSquare);
       const endPos = getSquarePosition(endSquare);
+
+      // Calculate the physical position of squares on the screen
+      // Each square is 10% of the board width/height
+      const squareSize = 10;
+      
+      // Adjust position based on the row orientation (snake pattern)
+      // For actual coordinates on the physical board
+      const getAdjustedPosition = (pos) => {
+        const x = pos.col * squareSize + (squareSize / 2);
+        const y = pos.row * squareSize + (squareSize / 2);
+        return { x, y };
+      };
+      
+      const startAdjusted = getAdjustedPosition(startPos);
+      const endAdjusted = getAdjustedPosition(endPos);
       
       // Calculate center points of the squares (as percentages)
-      const startX = (startPos.col + 0.5) * 10; // 10% per square (boardSize=10)
-      const startY = (startPos.row + 0.5) * 10;
-      const endX = (endPos.col + 0.5) * 10;
-      const endY = (endPos.row + 0.5) * 10;
+      const startX = startAdjusted.x;
+      const startY = startAdjusted.y;
+      const endX = endAdjusted.x;
+      const endY = endAdjusted.y;
+      
+      // Calculate offsets for better visual connection
+      // This helps the snakes and ladders connect more naturally to the squares
+      let startOffsetX = 0, startOffsetY = 0, endOffsetX = 0, endOffsetY = 0;
+      
+      if (isLadder) {
+        // Ladder offsets - adjust slightly to look better
+        startOffsetY = -0.5;
+        endOffsetY = 0.5;
+      } else {
+        // Snake offsets - adjust for visual appeal
+        startOffsetY = 0.5;
+      }
       
       // Calculate dimensions and angle
       const deltaX = endX - startX;
@@ -117,8 +145,8 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
             className="ladder"
             style={{
               width: `${distance}%`,
-              left: `${startX}%`,
-              top: `${startY}%`,
+              left: `${startX + startOffsetX}%`,
+              top: `${startY + startOffsetY}%`,
               transform: `rotate(${angle}deg)`,
               transformOrigin: 'left center',
             }}
@@ -132,8 +160,14 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
                 style={{ left: `${(i + 1) * (100 / (Math.floor(distance / 2) + 1))}%` }}
               />
             ))}
-            <div className="absolute -top-3 -left-3 bg-green-500 text-white text-xs px-1 rounded-full z-20">
-              {startSquare}→{endSquare}
+            
+            {/* Start indicator */}
+            <div className="absolute -top-3 -left-3 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-sm">
+              {startSquare}
+            </div>
+            {/* End indicator */}
+            <div className="absolute -bottom-3 -right-3 bg-green-600 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-sm">
+              {endSquare}
             </div>
           </div>
         );
@@ -147,15 +181,20 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
             className="snake"
             style={{
               width: `${distance}%`,
-              left: `${startX}%`,
-              top: `${startY}%`,
+              left: `${startX + startOffsetX}%`,
+              top: `${startY + startOffsetY}%`,
               transform: `rotate(${angle}deg)`,
               transformOrigin: 'left center',
             }}
             aria-label={`Snake from square ${startSquare} to ${endSquare}`}
           >
-            <div className="absolute -top-3 -left-3 bg-red-500 text-white text-xs px-1 rounded-full z-20">
-              {startSquare}→{endSquare}
+            {/* Start indicator */}
+            <div className="absolute -top-3 -left-3 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-sm">
+              {startSquare}
+            </div>
+            {/* End indicator */}
+            <div className="absolute -bottom-3 -right-3 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-sm">
+              {endSquare}
             </div>
           </div>
         );
