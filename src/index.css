@@ -89,4 +89,29 @@
   .token-move {
     transition: all 0.5s ease-in-out;
   }
+  
+  /* Ladder styling */
+  .ladder {
+    position: absolute;
+    height: 10px;
+    background: linear-gradient(to right, #34d399, #10b981);
+    transform-origin: left center;
+    z-index: 5;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .ladder::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(90deg, 
+      transparent, transparent 10px, 
+      rgba(255, 255, 255, 0.7) 10px, rgba(255, 255, 255, 0.7) 15px);
+    border-radius: 5px;
+    z-index: 6;
+  }
 }

@@ -270,9 +270,27 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
             </div>
           </div>
           
-          {/* Game Board Grid */}
-          <div className="grid grid-cols-10 gap-0.5 md:gap-1 border border-surface-300 dark:border-surface-600 rounded-xl overflow-hidden">
+          {/* Game Board Grid with Ladder */}
+          <div className="grid grid-cols-10 gap-0.5 md:gap-1 border border-surface-300 dark:border-surface-600 rounded-xl overflow-hidden relative">
             {createBoard()}
+            
+            {/* Ladder from square 4 to square 14 */}
+            <div 
+              className="ladder"
+              style={{
+                width: '180%',
+                left: '35%',
+                top: '75%',
+                transform: 'rotate(-38deg)',
+                transformOrigin: 'left center',
+              }}
+              aria-label="Ladder from square 4 to square 14"
+            >
+              <div className="absolute -top-3 -left-3 bg-green-500 text-white text-xs px-1 rounded-full">
+                4→14
+              </div>
+            </div>
+            
           </div>
           
           {/* Legend */}
