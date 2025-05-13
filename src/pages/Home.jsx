@@ -131,6 +131,7 @@ const Home = ({ darkMode }) => {
             darkMode={darkMode}
           />
         )}
+      </div>
       </main>
       
       <footer className="w-full py-4 bg-white dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700">
