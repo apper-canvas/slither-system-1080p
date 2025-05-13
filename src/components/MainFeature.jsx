@@ -581,5 +581,6 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
         </div>
       </div>
     </div>
+    </div>
   );
 }
