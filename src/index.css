@@ -57,7 +57,11 @@
   }
   
   .board-square {
-    @apply flex items-center justify-center relative border border-surface-300 dark:border-surface-700 transition-all duration-200;
+    @apply flex items-center justify-center relative border border-surface-300 dark:border-surface-700 transition-all duration-200 overflow-hidden;
+  }
+  
+  .dice-face {
+    @apply bg-white dark:bg-surface-700 rounded-xl shadow-dice flex items-center justify-center relative;
   }
   
   .player-token {
@@ -72,6 +76,16 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  .wood-texture {
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%23c68642'/%3E%3Cpath d='M0 0c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5zm0 20c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5zm0 20c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5z' fill='%23d9a066' fill-opacity='0.4'/%3E%3Cpath d='M0 50c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5zm0 20c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5zm0 20c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5z' fill='%23d9a066' fill-opacity='0.4'/%3E%3C/svg%3E");
+  }
+
+  .game-board {
+    @apply relative bg-woodgrain-medium shadow-board border-4 border-woodgrain-dark rounded-board overflow-hidden;
+    background-image: linear-gradient(to bottom, rgba(217, 160, 102, 0.6), rgba(198, 134, 66, 0.5)), 
+                     url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%23c68642'/%3E%3Cpath d='M0 0c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5zm0 20c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5zm0 20c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5z' fill='%23d9a066' fill-opacity='0.4'/%3E%3Cpath d='M0 50c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5zm0 20c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5zm0 20c20 0 20 5 40 5s20-5 40-5v10c-20 0-20 5-40 5s-20-5-40-5z' fill='%23d9a066' fill-opacity='0.4'/%3E%3C/svg%3E");
   }
   
   .dice-animation {
@@ -90,7 +104,7 @@
     transition: all 0.5s ease-in-out;
   }
   
-  /* Ladder styling */
+  /* Old Ladder styling - will be replaced */
   .ladder {
     position: absolute;
     height: 8px;
@@ -112,7 +126,7 @@
     z-index: 7;
   }
   
-  /* Snake styling */
+  /* Old Snake styling - will be replaced */
   .snake {
     position: absolute;
     height: 10px;
@@ -149,4 +163,192 @@
     50% { transform: rotate(var(--rotate)) translateY(-3px); }
   }
   
+  /* NEW ENHANCED STYLING */
+  
+  /* New Realistic Snake Styling */
+  .snake-body {
+    position: absolute;
+    height: 16px;
+    background: linear-gradient(to right, #2e7d32, #4caf50, #81c784);
+    transform-origin: left center;
+    z-index: 15;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: snake-slither 6s ease-in-out infinite;
+  }
+
+  .snake-body.snake-red {
+    background: linear-gradient(to right, #c62828, #ef5350, #e57373);
+  }
+
+  .snake-body.snake-purple {
+    background: linear-gradient(to right, #4a148c, #7b1fa2, #9c27b0);
+  }
+
+  .snake-body.snake-blue {
+    background: linear-gradient(to right, #0d47a1, #1976d2, #42a5f5);
+  }
+  
+  .snake-head {
+    position: absolute;
+    width: 28px;
+    height: 20px;
+    background-color: #2e7d32;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    z-index: 16;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .snake-head.snake-red {
+    background-color: #c62828;
+  }
+
+  .snake-head.snake-purple {
+    background-color: #4a148c;
+  }
+
+  .snake-head.snake-blue {
+    background-color: #0d47a1;
+  }
+  
+  .snake-eye {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: white;
+    border-radius: 50%;
+    top: 5px;
+  }
+  
+  .snake-eye.left {
+    left: 5px;
+  }
+  
+  .snake-eye.right {
+    right: 5px;
+  }
+  
+  .snake-tongue {
+    position: absolute;
+    width: 12px;
+    height: 2px;
+    background-color: #ff1744;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 17;
+    animation: snake-tongue 1.2s infinite;
+  }
+  
+  .snake-tongue::before,
+  .snake-tongue::after {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 2px;
+    background-color: #ff1744;
+    top: -1px;
+  }
+  
+  .snake-tongue::before {
+    left: 100%;
+    transform: rotate(25deg);
+  }
+  
+  .snake-tongue::after {
+    left: 100%;
+    transform: rotate(-25deg);
+  }
+  
+  .snake-scale {
+    position: absolute;
+    height: 8px;
+    width: 16px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.2);
+    transform: translateX(-50%);
+    z-index: 16;
+  }
+  
+  @keyframes snake-tongue {
+    0%, 100% { transform: translateX(-50%) scaleX(1); }
+    50% { transform: translateX(-50%) scaleX(1.3); }
+  }
+  
+  /* New Realistic Ladder Styling */
+  .ladder-container {
+    position: absolute;
+    z-index: 15;
+    transform-origin: center;
+  }
+  
+  .ladder-rail {
+    position: absolute;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(to bottom, #b27300, #eab308, #b27300);
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .ladder-rail.left {
+    left: 0;
+  }
+  
+  .ladder-rail.right {
+    right: 0;
+  }
+  
+  .ladder-step {
+    position: absolute;
+    height: 5px;
+    width: 100%;
+    background: linear-gradient(to right, #b27300, #eab308, #b27300);
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    z-index: 16;
+  }
+
+  /* Real dice with faces */
+  .dice-container {
+    perspective: 800px;
+    width: 70px;
+    height: 70px;
+    position: relative;
+  }
+
+  .dice {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+  }
+
+  .dice.rolling {
+    animation: dice-roll 0.8s linear;
+  }
+
+  .dice-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .dice-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #333;
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
+    position: absolute;
+  }
 }

@@ -87,7 +87,7 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
   // Component to render snakes and ladders
   const SnakesAndLadders = () => {
     // Helper function to get pixel position for a square
-    const getSquarePixelPosition = (squareNumber) => {
+    const getSquarePixelPosition = (squareNumber, offset = { x: 0, y: 0 }) => {
       // Get the grid position (row, col) first
       const pos = getSquarePosition(squareNumber);
       
@@ -111,7 +111,13 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
         x = ((boardSize - 1 - pos.col) * squareSize) + (squareSize / 2);
       }
       
-      return { x, y };
+      return { 
+        x: x + (offset.x || 0), 
+        y: y + (offset.y || 0),
+        row: pos.row,
+        col: pos.col,
+        rowFromTop: pos.rowFromTop
+      };
     };
     
     const elements = [];
@@ -130,84 +136,161 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
       const endY = endPos.y;
       
       // Calculate offsets for better visual connection
-      // This helps the snakes and ladders connect more naturally to the squares
-      let startOffsetX = 0, startOffsetY = 0, endOffsetX = 0, endOffsetY = 0;
-      
       if (isLadder) {
-        // Ladder offsets - adjust slightly to look better
-        startOffsetY = -0.5;
-        endOffsetY = 0.5;
-      } else {
-        // Snake offsets - adjust for visual appeal
-        startOffsetY = 0.5;
-      }
-      
-      // Calculate dimensions and angle
-      const deltaX = endX - startX;
-      const deltaY = endY - startY;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-      
-      if (isLadder) {
-        // Draw ladder
+        // Calculate dimensions for ladder
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+        const width = 30; // Width between ladder rails
+
+        // Draw enhanced ladder
         elements.push(
-          <div 
+          <div
             key={`ladder-${startSquare}-${endSquare}`}
-            className="ladder"
+            className="ladder-container"
             style={{
-              width: `${distance}%`,
-              left: `${startX + startOffsetX}%`,
-              top: `${startY + startOffsetY}%`,
+              width: `${width}px`,
+              height: `${distance}%`,
+              left: `${startX - (width/2)/10}%`,
+              top: `${startY}%`,
               transform: `rotate(${angle}deg)`,
-              transformOrigin: 'left center',
+              transformOrigin: 'center top',
             }}
             aria-label={`Ladder from square ${startSquare} to ${endSquare}`}
           >
-            {/* Add ladder rungs */}
-            {Array.from({ length: Math.floor(distance / 2) }).map((_, i) => (
-              <div 
-                key={`rung-${i}`}
-                className="ladder-rung"
-                style={{ left: `${(i + 1) * (100 / (Math.floor(distance / 2) + 1))}%` }}
-              />
+            {/* Left rail */}
+            <div className="ladder-rail left"></div>
+            
+            {/* Right rail */}
+            <div className="ladder-rail right"></div>
+            
+            {/* Ladder steps */}
+            {Array.from({ length: Math.max(3, Math.floor(distance / 5)) }).map((_, i) => (
+              <div
+                key={`step-${i}`}
+                className="ladder-step"
+                style={{ 
+                  top: `${(i + 1) * (100 / (Math.max(3, Math.floor(distance / 5)) + 1))}%`,
+                }}
+              ></div>
             ))}
             
-            {/* Start indicator */}
-            <div className="absolute -top-3 -left-3 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-sm">
+            {/* Start number indicator */}
+            <div className="absolute -bottom-6 -left-3 bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-md">
               {startSquare}
             </div>
-            {/* End indicator */}
-            <div className="absolute -bottom-3 -right-3 bg-green-600 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-sm">
+            
+            {/* End number indicator */}
+            <div className="absolute -top-6 -right-3 bg-amber-600 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-md">
               {endSquare}
             </div>
           </div>
         );
       } else {
-        // Draw snake
-        const controlPointOffset = distance * 0.3; // Curve control point offset
+        // Calculate dimensions for snake
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+        
+        // Assign different snake colors based on index
+        const snakeColors = ['', 'snake-red', 'snake-purple', 'snake-blue'];
+        const colorIndex = index % snakeColors.length;
+        const snakeColorClass = snakeColors[colorIndex];
+        
+        // Draw enhanced snake with curves
+        // For a more realistic snake, we want it to have some curves
+        // We'll create multiple segments with slight variations in angles
+        
+        // Determine number of segments based on distance
+        const numSegments = Math.max(3, Math.floor(distance / 10));
+        const segmentLength = distance / numSegments;
+        
+        // Create snake head at the start position
+        elements.push(
+          <div
+            key={`snake-head-${startSquare}-${endSquare}`}
+            className={`snake-head ${snakeColorClass}`}
+            style={{
+              left: `${startX - 1.4}%`,
+              top: `${startY - 1}%`,
+              transform: `rotate(${angle}deg)`,
+            }}
+          >
+            <div className="snake-eye left"></div>
+            <div className="snake-eye right"></div>
+            <div className="snake-tongue"></div>
+          </div>
+        );
+        
+        // Create snake body with multiple segments
+        for (let i = 0; i < numSegments; i++) {
+          // Calculate segment position and angle
+          // We add some randomness to make the snake look more natural
+          const segmentStart = i * segmentLength;
+          const segmentAngle = angle + (Math.sin(i * (Math.PI / numSegments)) * 15);
+          
+          // Calculate position
+          const segX = startX + (deltaX * (i / numSegments));
+          const segY = startY + (deltaY * (i / numSegments));
+          
+          elements.push(
+            <div
+              key={`snake-segment-${startSquare}-${endSquare}-${i}`}
+              className={`snake-body ${snakeColorClass}`}
+              style={{
+                width: `${segmentLength + 0.5}%`,
+                left: `${segX}%`,
+                top: `${segY}%`,
+                transform: `rotate(${segmentAngle}deg)`,
+                transformOrigin: 'left center',
+                animationDelay: `${i * 0.2}s`,
+              }}
+            ></div>
+          );
+          
+          // Add scales for detail
+          for (let j = 1; j < 4; j++) {
+            elements.push(
+              <div
+                key={`snake-scale-${startSquare}-${endSquare}-${i}-${j}`}
+                className="snake-scale"
+                style={{
+                  left: `${segX + ((segmentLength * j) / 4) * Math.cos(segmentAngle * (Math.PI / 180))}%`,
+                  top: `${segY + ((segmentLength * j) / 4) * Math.sin(segmentAngle * (Math.PI / 180))}%`,
+                  transform: `translateX(-50%) rotate(${segmentAngle + 90}deg)`,
+                }}
+              ></div>
+            );
+          }
+        }
+        
+        // Add number indicators
+        elements.push(
+          <div
+            key={`snake-start-indicator-${startSquare}`}
+            className="absolute z-30 shadow-md bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full"
+            style={{
+              left: `${startX - 1}%`,
+              top: `${startY - 3}%`,
+            }}
+          >
+              {startSquare}
+            </div>
+        );
         
         elements.push(
           <div
-            key={`snake-${startSquare}-${endSquare}`}
-            className="snake"
+            key={`snake-end-indicator-${endSquare}`}
+            className="absolute z-30 shadow-md bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full"
             style={{
-              width: `${distance}%`,
-              left: `${startX + startOffsetX}%`,
-              top: `${startY + startOffsetY}%`,
-              transform: `rotate(${angle}deg)`,
-              transformOrigin: 'left center',
+              left: `${endX + 1}%`,
+              top: `${endY + 1}%`,
             }}
-            aria-label={`Snake from square ${startSquare} to ${endSquare}`}
           >
-            {/* Start indicator */}
-            <div className="absolute -top-3 -left-3 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-sm">
-              {startSquare}
-            </div>
-            {/* End indicator */}
-            <div className="absolute -bottom-3 -right-3 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full z-20 shadow-sm">
               {endSquare}
             </div>
-          </div>
         );
       }
     });
@@ -233,10 +316,23 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
         const isLadder = hasSpecial && specialSquares[squareNumber] > squareNumber;
         
         // Determine square color based on position
-        let bgClass = "bg-white dark:bg-surface-800";
+        let bgClass = "bg-surface-150 dark:bg-surface-700 hover:bg-surface-160 dark:hover:bg-surface-600";
         if ((row + actualCol) % 2 === 0) {
-          bgClass = "bg-surface-100 dark:bg-surface-700";
+          bgClass = "bg-surface-170 dark:bg-surface-800 hover:bg-surface-180 dark:hover:bg-surface-700";
         }
+
+        // Special styling for first and last square
+        if (squareNumber === 1) {
+          bgClass = "bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-800/40 border-green-300 dark:border-green-700";
+        }
+        
+        if (squareNumber === totalSquares) {
+          bgClass = "bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-800/40 border-amber-300 dark:border-amber-700";
+        }
+        
+        // Add shadow for 3D effect
+        bgClass += " shadow-board-inner";
+        
         
         // Add special styling for snakes and ladders
         if (isSnake) {
@@ -249,11 +345,11 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
           <div 
             key={squareNumber} 
             className={`board-square aspect-square ${bgClass}`}
-            data-number={squareNumber}
+            data-square={squareNumber}
           >
             <span className="text-xs md:text-sm font-semibold">{squareNumber}</span>
             
-            {/* Show snake or ladder indicator */}
+            {/* Show basic snake or ladder indicator on square */}
             {isSnake && (
               <div className="absolute bottom-1 right-1">
                 <ArrowDownIcon className="w-3 h-3 md:w-4 md:h-4 text-red-500" />
@@ -269,12 +365,12 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
             {positions.map((position, playerIndex) => (
               position === squareNumber && (
                 <div
-                  key={`player-${playerIndex}`}
+                  key={`player-token-${playerIndex}-${position}`}
                   className="player-token token-move"
                   style={{ 
                     backgroundColor: players[playerIndex].color,
                     borderColor: darkMode ? "#fff" : "#000",
-                    left: playerIndex === 0 ? "35%" : "65%",
+                    left: playerIndex === 0 ? "30%" : "70%",
                     top: "50%",
                     zIndex: 10
                   }}
@@ -422,8 +518,8 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
           </div>
           
           {/* Game Board Grid with Ladder */}
-          <div className="grid grid-cols-10 gap-0.5 md:gap-1 border border-surface-300 dark:border-surface-600 rounded-xl overflow-hidden relative">
-            {createBoard()}
+          <div className="game-board p-2">
+            <div className="grid grid-cols-10 gap-0.5 md:gap-1 relative">{createBoard()}</div>
             <SnakesAndLadders />
             
           </div>
@@ -505,10 +601,88 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
                   </div>
                   
                   <div className="flex flex-col items-center">
-                    <div 
-                      className={`w-20 h-20 rounded-xl bg-white dark:bg-surface-700 shadow-soft flex items-center justify-center text-3xl font-bold mb-4 ${isRolling ? 'dice-animation' : ''}`}
-                    >
-                      {diceValue || <DiceIcon className="w-10 h-10 text-surface-400" />}
+                    {/* New 3D Dice with realistic faces */}
+                    <div className="dice-container mb-6">
+                      <div className={`dice ${isRolling ? 'rolling' : ''}`} style={{
+                        transform: diceValue ? `rotateX(${getDiceRotation(diceValue).x}deg) rotateY(${getDiceRotation(diceValue).y}deg)` : 'rotateX(0deg) rotateY(0deg)'
+                      }}>
+                        {/* Face 1 */}
+                        <div className="dice-face" style={{
+                          transform: 'rotateY(0deg) translateZ(35px)'
+                        }}>
+                          <div className="dice-dot" style={{
+                            top: '50%', left: '50%', transform: 'translate(-50%, -50%)'
+                          }}></div>
+                        </div>
+                        
+                        {/* Face 2 */}
+                        <div className="dice-face" style={{
+                          transform: 'rotateY(-90deg) translateZ(35px)'
+                        }}>
+                          <div className="dice-dot" style={{
+                            top: '25%', left: '25%', transform: 'translate(-50%, -50%)'
+                          }}></div>
+                          <div className="dice-dot" style={{
+                            bottom: '25%', right: '25%', transform: 'translate(50%, 50%)'
+                          }}></div>
+                        </div>
+                        
+                        {/* Face 3 */}
+                        <div className="dice-face" style={{
+                          transform: 'rotateX(90deg) translateZ(35px)'
+                        }}>
+                          <div className="dice-dot" style={{
+                            top: '25%', left: '25%', transform: 'translate(-50%, -50%)'
+                          }}></div>
+                          <div className="dice-dot" style={{
+                            top: '50%', left: '50%', transform: 'translate(-50%, -50%)'
+                          }}></div>
+                          <div className="dice-dot" style={{
+                            bottom: '25%', right: '25%', transform: 'translate(50%, 50%)'
+                          }}></div>
+                        </div>
+                        
+                        {/* Face 4 */}
+                        <div className="dice-face" style={{
+                          transform: 'rotateY(90deg) translateZ(35px)'
+                        }}>
+                          <div className="dice-dot" style={{
+                            top: '25%', left: '25%', transform: 'translate(-50%, -50%)'
+                          }}></div>
+                          <div className="dice-dot" style={{
+                            top: '25%', right: '25%', transform: 'translate(50%, -50%)'
+                          }}></div>
+                          <div className="dice-dot" style={{
+                            bottom: '25%', left: '25%', transform: 'translate(-50%, 50%)'
+                          }}></div>
+                          <div className="dice-dot" style={{
+                            bottom: '25%', right: '25%', transform: 'translate(50%, 50%)'
+                          }}></div>
+                        </div>
+                        
+                        {/* Face 5 */}
+                        <div className="dice-face" style={{
+                          transform: 'rotateY(180deg) translateZ(35px)'
+                        }}>
+                          <div className="dice-dot" style={{ top: '25%', left: '25%', transform: 'translate(-50%, -50%)' }}></div>
+                          <div className="dice-dot" style={{ top: '25%', right: '25%', transform: 'translate(50%, -50%)' }}></div>
+                          <div className="dice-dot" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}></div>
+                          <div className="dice-dot" style={{ bottom: '25%', left: '25%', transform: 'translate(-50%, 50%)' }}></div>
+                          <div className="dice-dot" style={{ bottom: '25%', right: '25%', transform: 'translate(50%, 50%)' }}></div>
+                        </div>
+                        
+                        {/* Face 6 */}
+                        <div className="dice-face" style={{
+                          transform: 'rotateX(-90deg) translateZ(35px)'
+                        }}>
+                          <div className="dice-dot" style={{ top: '25%', left: '25%', transform: 'translate(-50%, -50%)' }}></div>
+                          <div className="dice-dot" style={{ top: '25%', right: '25%', transform: 'translate(50%, -50%)' }}></div>
+                          <div className="dice-dot" style={{ top: '50%', left: '25%', transform: 'translate(-50%, -50%)' }}></div>
+                          <div className="dice-dot" style={{ top: '50%', right: '25%', transform: 'translate(50%, -50%)' }}></div>
+                          <div className="dice-dot" style={{ bottom: '25%', left: '25%', transform: 'translate(-50%, 50%)' }}></div>
+                          <div className="dice-dot" style={{ bottom: '25%', right: '25%', transform: 'translate(50%, 50%)' }}></div>
+                        </div>
+                      </div>
                     </div>
                     
                     <button
@@ -582,7 +756,21 @@ const MainFeature = ({ players, onEndGame, darkMode }) => {
       </div>
     </div>
     </div>
+
+  // Helper function to get the rotation values for the dice based on the value
+  function getDiceRotation(value) {
+    switch(value) {
+      case 1: return { x: 0, y: 0 }; // Front face
+      case 2: return { x: 0, y: -90 }; // Right face
+      case 3: return { x: 90, y: 0 }; // Top face
+      case 4: return { x: 0, y: 90 }; // Left face
+      case 5: return { x: 0, y: 180 }; // Back face
+      case 6: return { x: -90, y: 0 }; // Bottom face
+      default: return { x: 0, y: 0 };
+    }
+  }
   );
+
 }
 
 export default MainFeature;
