@@ -138,7 +138,6 @@ const Home = ({ darkMode }) => {
         </div>
       </footer>
     </div>
-    </div>
   );
 };
 
